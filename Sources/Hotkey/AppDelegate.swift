@@ -36,10 +36,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
         if let button = statusItem.button {
-            button.image = NSImage(
-                systemSymbolName: "keyboard",
-                accessibilityDescription: "Hotkey"
-            )
+            if let iconPath = Bundle.main.path(forResource: "menubar-icon@2x", ofType: "png"),
+               let icon = NSImage(contentsOfFile: iconPath) {
+                icon.size = NSSize(width: 22, height: 22)
+                icon.isTemplate = false
+                button.image = icon
+            } else {
+                button.image = NSImage(
+                    systemSymbolName: "keyboard",
+                    accessibilityDescription: "Hotkey"
+                )
+            }
         }
 
         let menu = NSMenu()

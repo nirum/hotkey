@@ -4,3 +4,5 @@ Hotkey.app/
 *.xcodeproj/
 xcuserdata/
 DerivedData/
+AppIcon.iconset/
+AppIcon.icns

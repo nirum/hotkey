@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" width="128" height="128" alt="Hotkey app icon">
+</p>
+
 # Hotkey
 
 A lightweight macOS menu bar app that lets you toggle application visibility with global keyboard shortcuts. Define your shortcuts in a simple TOML config file.
