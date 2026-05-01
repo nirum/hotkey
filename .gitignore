@@ -1,0 +1,6 @@
+.build/
+.swiftpm/
+Hotkey.app/
+*.xcodeproj/
+xcuserdata/
+DerivedData/
