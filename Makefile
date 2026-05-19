@@ -30,8 +30,8 @@ app: build icon
 	mkdir -p $(BUNDLE)/Contents/Resources
 	cp $(BUILD_DIR)/$(APP_NAME) $(BUNDLE)/Contents/MacOS/
 	cp AppIcon.icns $(BUNDLE)/Contents/Resources/
-	sips -z 44 44 logo.png --out $(BUNDLE)/Contents/Resources/menubar-icon@2x.png
-	sips -z 22 22 logo.png --out $(BUNDLE)/Contents/Resources/menubar-icon.png
+	magick logo.png -fuzz 5% -transparent white -resize 44x44 $(BUNDLE)/Contents/Resources/menubar-icon@2x.png
+	magick logo.png -fuzz 5% -transparent white -resize 22x22 $(BUNDLE)/Contents/Resources/menubar-icon.png
 	@/usr/libexec/PlistBuddy -c "Clear dict" $(BUNDLE)/Contents/Info.plist 2>/dev/null; \
 	/usr/libexec/PlistBuddy \
 		-c "Add :CFBundleIdentifier string com.hotkey.app" \

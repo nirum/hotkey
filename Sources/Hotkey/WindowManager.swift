@@ -12,22 +12,46 @@ class WindowManager {
 
     func toggleApp(_ appName: String) {
         if let app = findRunningApp(named: appName) {
-            if app.isActive {
+            let hasWindows = hasVisibleWindows(pid: app.processIdentifier)
+            if app.isActive && hasWindows {
                 app.hide()
-            } else {
+            } else if hasWindows {
                 app.unhide()
                 app.activate(options: [.activateIgnoringOtherApps])
+            } else if let url = app.bundleURL {
+                openOrReopen(url: url, appName: appName)
             }
         } else if let url = resolveAppURL(appName) {
-            let config = NSWorkspace.OpenConfiguration()
-            config.activates = true
-            NSWorkspace.shared.openApplication(at: url, configuration: config) { _, error in
-                if let error = error {
-                    NSLog("Hotkey: Failed to launch '%@': %@", appName, error.localizedDescription)
-                }
-            }
+            openOrReopen(url: url, appName: appName)
         } else {
             NSLog("Hotkey: Could not find application '%@'", appName)
+        }
+    }
+
+    private func openOrReopen(url: URL, appName: String) {
+        let config = NSWorkspace.OpenConfiguration()
+        config.activates = true
+        NSWorkspace.shared.openApplication(at: url, configuration: config) { _, error in
+            if let error = error {
+                NSLog("Hotkey: Failed to open '%@': %@", appName, error.localizedDescription)
+            }
+        }
+    }
+
+    private func hasVisibleWindows(pid: pid_t) -> Bool {
+        let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
+        guard let windows = CGWindowListCopyWindowInfo(options, kCGNullWindowID)
+            as? [[String: Any]] else {
+            return false
+        }
+        return windows.contains { window in
+            guard let ownerPID = window[kCGWindowOwnerPID as String] as? pid_t,
+                  ownerPID == pid,
+                  let layer = window[kCGWindowLayer as String] as? Int,
+                  layer == 0 else {
+                return false
+            }
+            return true
         }
     }
 
