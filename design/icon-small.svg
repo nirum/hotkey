@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Hotkey — app icon, small sizes (32px and 16px slices only)
+    ==========================================================
+    At 32px the ⌘H pair has ~13px for two glyphs and the knot's counters close
+    up; at 16px it is a smudge. So the small slices drop the H and run the ⌘
+    alone at 63% of the squircle, with the stroke opened from 42 to 52 to hold
+    density at size.
+
+    This is the usual progressive-detail ladder for an icon family: the same
+    mark, simplified as the pixel budget shrinks. 128px and up use icon.svg.
+  -->
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FEFCF8"/>
+      <stop offset="1" stop-color="#EBE2D6"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#ground)"/>
+
+  <g transform="translate(512 512) scale(0.63)">
+    <path d="M -215 -115
+             L  215 -115
+             A 100 100 0 1 0  115 -215
+             L  115  215
+             A 100 100 0 1 0  215  115
+             L -215  115
+             A 100 100 0 1 0 -115  215
+             L -115 -215
+             A 100 100 0 1 0 -215 -115 Z"
+          fill="none" stroke="#2A231D" stroke-width="52"/>
+  </g>
+
+  <rect x="101.5" y="101.5" width="821" height="821" rx="184"
+        fill="none" stroke="#241D18" stroke-opacity=".10" stroke-width="3"/>
+</svg>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Hotkey — macOS app icon
+    ========================
+    Mark: the ⌘H lockup. ⌘H is macOS's own Hide shortcut, which is exactly
+    what this app does, so the mark is the function.
+
+    Geometry is shared with design/menubar.svg — same drawing, two colorways.
+    Local mark space: ⌘ centred on (0,0); H sits to its right.
+      command knot : loop radius r=100, square half-side s=115, stroke w=42
+                     bbox x,y ∈ [-336, 336]
+      H            : monoline, same 42 stroke, x ∈ [424, 804], y ∈ [-290, 290]
+      lockup bbox  : x ∈ [-336, 804] (1140 wide), y ∈ [-336, 336] (672 tall)
+
+    Placement: Big Sur grid — squircle inset 100px on all sides, radius 185.
+    Mark scaled 0.535 → 610 × 359, optically centred on (512, 512).
+  -->
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FEFCF8"/>
+      <stop offset="1" stop-color="#EBE2D6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- squircle -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#ground)"/>
+
+  <!-- mark -->
+  <g transform="translate(512 512) scale(0.535) translate(-234 0)">
+    <!-- ⌘ : four straight runs, each pair joined by a 270° outward loop -->
+    <path d="M -215 -115
+             L  215 -115
+             A 100 100 0 1 0  115 -215
+             L  115  215
+             A 100 100 0 1 0  215  115
+             L -215  115
+             A 100 100 0 1 0 -115  215
+             L -115 -215
+             A 100 100 0 1 0 -215 -115 Z"
+          fill="none" stroke="#2A231D" stroke-width="42"/>
+
+    <!-- H : monoline, stroke weight matched to the knot -->
+    <g fill="#DB4A10">
+      <rect x="424" y="-290" width="42" height="580"/>
+      <rect x="762" y="-290" width="42" height="580"/>
+      <rect x="424" y="-21"  width="380" height="42"/>
+    </g>
+  </g>
+
+  <!-- hairline so the light ground holds an edge against a white Finder background -->
+  <rect x="101.5" y="101.5" width="821" height="821" rx="184"
+        fill="none" stroke="#241D18" stroke-opacity=".10" stroke-width="3"/>
+</svg>
