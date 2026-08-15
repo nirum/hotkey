@@ -109,8 +109,22 @@ Acceptance: success, rejection, partial registration, persistence rollback, and 
 
 Acceptance: the next menu opening reflects successful add, edit, and delete operations while rejected edits remain absent; deterministic mapper tests cover identity, ordering, labels, and empty state.
 
+## 10. Preserve One-Shot Shortcut Recording
+
+**Status:** Complete
+**Depends on:** Tasks 6 and 8
+
+- [x] Reduce recorder key, modifier, repeat, cancellation, and focus events independently of AppKit.
+- [x] Accept the first valid non-repeating chord atomically and end recording immediately.
+- [x] Keep modifier feedback transient so key release cannot overwrite the draft.
+- [x] Preserve the last valid shortcut after invalid input, Escape, or focus loss.
+- [x] Relinquish focus after capture so Return resumes the Save action.
+
+Acceptance: release events preserve the accepted chord; invalid and repeated events cannot replace it; mouse Save and Return Save both receive the accepted draft.
+
 ## Progress Log
 
+- 2026-08-15 — Task 10 — Complete; shortcut recording now accepts one valid chord, updates the draft atomically, ends recording before release events, preserves valid values across invalid input and cancellation, and restores Return to Save.
 - 2026-08-15 — Task 9 — Complete; configured applications now appear in preference order above Quit with color icons and native shortcut equivalents, mouse selection uses the existing toggle path, and rejected edits remain excluded by reading the active coordinator snapshot.
 - 2026-08-15 — Verification — All eight tasks are complete. `swift build` passes; all committed XCTest sources type-check against the built `HotkeyCore` module. Local `swift test` stops because the standalone Command Line Tools omit XCTest, so execution is delegated to the documented full-Xcode `macos-26` CI check.
 - 2026-08-15 — Task 8 — Complete; preference changes now validate, swap registrations, persist, and commit as one transaction; rejected edits retain known-good state. Tests cover success, validation rejection, partial registration, persistence rollback, cleanup failure, restoration failure, and temporary-unregister failure.

@@ -24,12 +24,14 @@ This creates an unsigned release app and replaces `~/Applications/Hotkey.app`. P
 ## Configure shortcuts
 
 1. Choose **Hotkey → Preferences…** or press `⌘,` while the menu is open.
-2. Select **Add Shortcut**, choose a `.app` bundle, and record a shortcut.
-3. Save. The complete shortcut set is validated and applied immediately.
+2. Select **Add Shortcut**, choose a `.app` bundle, click the recorder, and press one shortcut chord.
+3. Release the keys. Recording ends after the valid chord, so click **Save** or press Return to apply it.
 
 Configured applications also appear above **Quit Hotkey** in the menu, in preference order. Click an application there to perform the same toggle as its global shortcut.
 
 A shortcut must contain a keyboard key and at least one of Command, Option, or Control. Shift can supplement those modifiers but cannot be used alone. Duplicate shortcuts are rejected.
+
+An invalid chord shows feedback without replacing the previous valid shortcut. Press Escape or move focus away to stop recording without changing that value.
 
 Preferences are stored as versioned JSON data in `UserDefaults` under `hotkey.bindings.v1`. This is an intentional hard cutover from TOML: Hotkey never reads, creates, imports, watches, changes, or deletes `~/.config/hotkey/config.toml`.
 

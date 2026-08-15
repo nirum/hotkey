@@ -288,9 +288,11 @@ private struct BindingEditorView: View {
                 ShortcutRecorder(
                     keyCode: state.draft.keyCode,
                     modifiers: state.draft.modifiers
-                ) { keyCode, modifiers, errorMessage in
-                    state.draft.keyCode = keyCode
-                    state.draft.modifiers = modifiers
+                ) { shortcut in
+                    state.draft.keyCode = shortcut.keyCode
+                    state.draft.modifiers = shortcut.modifiers
+                    state.errorMessage = nil
+                } onError: { errorMessage in
                     state.errorMessage = errorMessage
                 }
                 .frame(height: 38)
@@ -364,38 +366,33 @@ private final class BindingEditorState: ObservableObject {
 private struct ShortcutRecorder: NSViewRepresentable {
     let keyCode: UInt32?
     let modifiers: ShortcutModifiers
-    let onChange: (UInt32?, ShortcutModifiers, String?) -> Void
+    let onAccepted: (RecordedShortcut) -> Void
+    let onError: (String) -> Void
 
     func makeNSView(context: Context) -> ShortcutRecorderField {
-        let field = ShortcutRecorderField()
-        field.onEvent = { keyCode, modifiers, modifierOnly in
-            switch ShortcutInterpreter.capture(
-                keyCode: keyCode,
-                modifiers: modifiers,
-                isModifierOnly: modifierOnly
-            ) {
-            case .accepted(let shortcut):
-                onChange(shortcut.keyCode, shortcut.modifiers, nil)
-            case .rejected(let message):
-                onChange(self.keyCode, self.modifiers, message)
-            }
-        }
+        let field = ShortcutRecorderField(keyCode: keyCode, modifiers: modifiers)
+        field.onAccepted = onAccepted
+        field.onError = onError
         return field
     }
 
     func updateNSView(_ field: ShortcutRecorderField, context: Context) {
-        field.stringValue = keyCode.map {
-            ShortcutDisplay.string(keyCode: $0, modifiers: modifiers)
-        } ?? "Click, then type a shortcut"
+        field.onAccepted = onAccepted
+        field.onError = onError
+        field.synchronize(keyCode: keyCode, modifiers: modifiers)
     }
 }
 
 private final class ShortcutRecorderField: NSTextField {
-    var onEvent: ((UInt32?, ShortcutModifiers, Bool) -> Void)?
+    var onAccepted: ((RecordedShortcut) -> Void)?
+    var onError: ((String) -> Void)?
+
+    private var reducer: ShortcutRecordingReducer
 
     override var acceptsFirstResponder: Bool { true }
 
-    init() {
+    init(keyCode: UInt32?, modifiers: ShortcutModifiers) {
+        reducer = ShortcutRecordingReducer(keyCode: keyCode, modifiers: modifiers)
         super.init(frame: .zero)
         isEditable = false
         isSelectable = false
@@ -403,6 +400,7 @@ private final class ShortcutRecorderField: NSTextField {
         font = .monospacedSystemFont(ofSize: 15, weight: .medium)
         bezelStyle = .roundedBezel
         focusRingType = .default
+        refreshDisplay()
     }
 
     required init?(coder: NSCoder) {
@@ -411,6 +409,20 @@ private final class ShortcutRecorderField: NSTextField {
 
     override func mouseDown(with event: NSEvent) {
         window?.makeFirstResponder(self)
+    }
+
+    override func becomeFirstResponder() -> Bool {
+        guard super.becomeFirstResponder() else { return false }
+        reducer.reduce(.begin)
+        refreshDisplay()
+        return true
+    }
+
+    override func resignFirstResponder() -> Bool {
+        guard super.resignFirstResponder() else { return false }
+        reducer.reduce(.focusLost)
+        refreshDisplay()
+        return true
     }
 
     override func keyDown(with event: NSEvent) {
@@ -426,12 +438,54 @@ private final class ShortcutRecorderField: NSTextField {
     }
 
     override func flagsChanged(with event: NSEvent) {
-        onEvent?(nil, ShortcutModifiers(event.modifierFlags), true)
+        reducer.reduce(.modifiersChanged(ShortcutModifiers(event.modifierFlags)))
+        refreshDisplay()
     }
 
     private func capture(_ event: NSEvent) {
-        guard !event.isARepeat else { return }
-        onEvent?(UInt32(event.keyCode), ShortcutModifiers(event.modifierFlags), false)
+        if event.keyCode == 53 {
+            reducer.reduce(.cancel)
+            refreshDisplay()
+            window?.makeFirstResponder(nil)
+            return
+        }
+
+        let effect = reducer.reduce(.keyDown(
+            keyCode: UInt32(event.keyCode),
+            modifiers: ShortcutModifiers(event.modifierFlags),
+            isRepeat: event.isARepeat
+        ))
+        refreshDisplay()
+
+        switch effect {
+        case .accepted(let shortcut):
+            onAccepted?(shortcut)
+            window?.makeFirstResponder(nil)
+        case .rejected(let message):
+            onError?(message)
+        case .none, .ended:
+            break
+        }
+    }
+
+    func synchronize(keyCode: UInt32?, modifiers: ShortcutModifiers) {
+        reducer.synchronize(keyCode: keyCode, modifiers: modifiers)
+        refreshDisplay()
+    }
+
+    private func refreshDisplay() {
+        if reducer.state.isRecording, !reducer.state.transientModifiers.isEmpty {
+            stringValue = ShortcutDisplay.modifierString(reducer.state.transientModifiers)
+        } else if let shortcut = reducer.state.acceptedShortcut {
+            stringValue = ShortcutDisplay.string(
+                keyCode: shortcut.keyCode,
+                modifiers: shortcut.modifiers
+            )
+        } else {
+            stringValue = reducer.state.isRecording
+                ? "Type a shortcut"
+                : "Click, then type a shortcut"
+        }
     }
 }
 
