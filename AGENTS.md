@@ -34,6 +34,8 @@ Update this file whenever architecture, dependencies, supported platforms, or ve
 
 Before handing off a code change, run `swift build` and `swift test`. Packaging changes also require `make app` or `make install` plus a manual launch smoke test.
 
+GitHub Actions runs those commands on the `macos-26` runner for every push and pull request. Protect the default branch with the `Build and Test` job as a required check. CI intentionally has no signing, packaging, deployment, or release responsibility.
+
 ## Configuration and packaging
 
 Bindings are encoded as versioned JSON in `UserDefaults` under `hotkey.bindings.v1`. There are no external Swift package dependencies. The legacy `~/.config/hotkey/config.toml` is intentionally never read, created, imported, watched, modified, or deleted. The packaging target creates an unsigned menu-bar app with bundle identifier `com.hotkey.app`, minimum macOS 13, and `LSUIElement` enabled.

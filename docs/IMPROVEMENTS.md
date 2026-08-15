@@ -40,12 +40,12 @@ Acceptance: `swift test` is deterministic; platform adapters remain thin and rec
 
 ## 4. Add GitHub Actions CI
 
-**Status:** Not started
+**Status:** Complete
 **Depends on:** Task 3
 
-- [ ] Add push and pull-request CI on `macos-26`.
-- [ ] Use `actions/checkout@v7`, `contents: read`, and branch-scoped concurrency cancellation.
-- [ ] Run `swift build` followed by `swift test`; document the required check.
+- [x] Add push and pull-request CI on `macos-26`.
+- [x] Use `actions/checkout@v7`, `contents: read`, and branch-scoped concurrency cancellation.
+- [x] Run `swift build` followed by `swift test`; document the required check.
 
 Acceptance: clean checkouts build and test; failures fail CI; no signing, deployment, or release work occurs.
 
@@ -98,6 +98,7 @@ Acceptance: success, rejection, partial registration, persistence rollback, and 
 
 ## Progress Log
 
+- 2026-08-15 — Task 4 — Complete; added minimal push/PR CI with `macos-26`, `actions/checkout@v7`, read-only contents permission, superseded-run cancellation, and sequential build/test steps. Documented `Build and Test` as the required check.
 - 2026-08-15 — Task 3 — Complete; added an XCTest suite plus a conditional Swift Testing fallback for Command Line Tools installations without XCTest. Ten fallback tests passed via `swift test`; no test touched Carbon, `NSWorkspace`, standard user defaults, or real applications.
 - 2026-08-15 — Task 2 — Complete; replaced TOML with native SwiftUI Preferences and versioned `UserDefaults` JSON, removed TOMLKit and filesystem configuration behavior, and verified with `swift build`.
 - 2026-08-15 — Task 1 — Complete; added repository guidance and the sequential tracker. Baseline `swift build` passed; baseline `swift test` reached the expected `no tests found` result. The earlier compiler/SDK patch mismatch did not reproduce in the isolated worktree.
