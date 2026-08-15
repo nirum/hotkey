@@ -96,8 +96,22 @@ Acceptance: repeated toggles, moves/renames, identifier-less apps, and matching 
 
 Acceptance: success, rejection, partial registration, persistence rollback, and rollback-failure paths are tested.
 
+## 9. Add Configured Applications to the Menu
+
+**Status:** Complete
+**Depends on:** Task 8
+
+- [x] Rebuild configured application rows from the active binding set before the menu opens.
+- [x] Preserve preference order and show native shortcut equivalents with a legacy-key fallback.
+- [x] Resolve color icons by bundle identifier before the stored URL.
+- [x] Route mouse selection through the existing application toggle path.
+- [x] Omit the section and its extra separator when no active bindings exist.
+
+Acceptance: the next menu opening reflects successful add, edit, and delete operations while rejected edits remain absent; deterministic mapper tests cover identity, ordering, labels, and empty state.
+
 ## Progress Log
 
+- 2026-08-15 — Task 9 — Complete; configured applications now appear in preference order above Quit with color icons and native shortcut equivalents, mouse selection uses the existing toggle path, and rejected edits remain excluded by reading the active coordinator snapshot.
 - 2026-08-15 — Verification — All eight tasks are complete. `swift build` passes; all committed XCTest sources type-check against the built `HotkeyCore` module. Local `swift test` stops because the standalone Command Line Tools omit XCTest, so execution is delegated to the documented full-Xcode `macos-26` CI check.
 - 2026-08-15 — Task 8 — Complete; preference changes now validate, swap registrations, persist, and commit as one transaction; rejected edits retain known-good state. Tests cover success, validation rejection, partial registration, persistence rollback, cleanup failure, restoration failure, and temporary-unregister failure.
 - 2026-08-15 — Task 7 — Complete; implemented bundle-ID, canonical URL, and display-name matching precedence, active-instance preference, Launch Services resolution, and injected workspace/window decision providers with tests.

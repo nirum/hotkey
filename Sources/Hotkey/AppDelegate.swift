@@ -2,7 +2,7 @@ import AppKit
 import Combine
 import HotkeyCore
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let issueCenter = IssueCenter()
     private let launchAgentLabel = "com.hotkey.app"
 
@@ -10,6 +10,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var issueSummaryItem: NSMenuItem!
     private var showErrorsItem: NSMenuItem!
     private var launchAtLoginItem: NSMenuItem!
+    private var quitItem: NSMenuItem!
+    private var shortcutMenuItems: [NSMenuItem] = []
     private var issueCancellable: AnyCancellable?
 
     private var registrar: CarbonHotkeyRegistrar!
@@ -71,6 +73,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setNormalStatusImage()
 
         let menu = NSMenu()
+        menu.delegate = self
         let headerItem = NSMenuItem(title: "Hotkey", action: nil, keyEquivalent: "")
         headerItem.isEnabled = false
         menu.addItem(headerItem)
@@ -110,7 +113,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(launchAtLoginItem)
 
         menu.addItem(.separator())
-        let quitItem = NSMenuItem(
+        quitItem = NSMenuItem(
             title: "Quit Hotkey",
             action: #selector(quit),
             keyEquivalent: "q"
@@ -119,6 +122,64 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         quitItem.target = self
         menu.addItem(quitItem)
         statusItem.menu = menu
+    }
+
+    func menuWillOpen(_ menu: NSMenu) {
+        rebuildShortcutMenu(in: menu)
+    }
+
+    private func rebuildShortcutMenu(in menu: NSMenu) {
+        shortcutMenuItems.forEach(menu.removeItem)
+        shortcutMenuItems.removeAll()
+
+        let entries = MenuShortcutEntryMapper.map(coordinator?.activeBindings ?? [])
+        guard !entries.isEmpty else { return }
+
+        for entry in entries {
+            let item = NSMenuItem(
+                title: entry.title,
+                action: #selector(toggleApplicationFromMenu(_:)),
+                keyEquivalent: entry.keyEquivalent ?? ""
+            )
+            item.target = self
+            item.representedObject = entry.id as NSUUID
+            item.image = applicationIcon(for: entry)
+            item.keyEquivalentModifierMask = modifierFlags(for: entry.modifiers)
+            menu.insertItem(item, at: menu.index(of: quitItem))
+            shortcutMenuItems.append(item)
+        }
+
+        let separator = NSMenuItem.separator()
+        menu.insertItem(separator, at: menu.index(of: quitItem))
+        shortcutMenuItems.append(separator)
+    }
+
+    private func applicationIcon(for entry: MenuShortcutEntry) -> NSImage {
+        let resolvedURL = entry.bundleIdentifier.flatMap {
+            NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0)
+        }
+        let icon = NSWorkspace.shared.icon(forFile: (resolvedURL ?? entry.applicationURL).path)
+        let menuIcon = (icon.copy() as? NSImage) ?? icon
+        menuIcon.size = NSSize(width: 18, height: 18)
+        menuIcon.isTemplate = false
+        return menuIcon
+    }
+
+    private func modifierFlags(for modifiers: ShortcutModifiers) -> NSEvent.ModifierFlags {
+        var flags: NSEvent.ModifierFlags = []
+        if modifiers.contains(.control) { flags.insert(.control) }
+        if modifiers.contains(.option) { flags.insert(.option) }
+        if modifiers.contains(.shift) { flags.insert(.shift) }
+        if modifiers.contains(.command) { flags.insert(.command) }
+        return flags
+    }
+
+    @objc private func toggleApplicationFromMenu(_ sender: NSMenuItem) {
+        guard let id = sender.representedObject as? UUID,
+              let binding = coordinator.activeBindings.first(where: { $0.id == id }) else {
+            return
+        }
+        windowManager.toggle(binding)
     }
 
     private func setNormalStatusImage() {
