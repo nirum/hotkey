@@ -1,98 +1,84 @@
 import AppKit
+import HotkeyCore
 
-class WindowManager {
-    private var appURLCache: [String: URL] = [:]
+final class WindowManager {
+    var onFailure: ((HotkeyBinding, String) -> Void)?
 
-    private static let searchDirectories: [String] = [
-        "/Applications",
-        "/Applications/Utilities",
-        "/System/Applications",
-        "/System/Applications/Utilities",
-    ]
+    private let workspace: NSWorkspace
+    private let fileManager: FileManager
 
-    func toggleApp(_ appName: String) {
-        if let app = findRunningApp(named: appName) {
-            let hasWindows = hasVisibleWindows(pid: app.processIdentifier)
-            if app.isActive && hasWindows {
-                app.hide()
-            } else if hasWindows {
-                app.unhide()
-                app.activate(options: [.activateIgnoringOtherApps])
-            } else if let url = app.bundleURL {
-                openOrReopen(url: url, appName: appName)
+    init(workspace: NSWorkspace = .shared, fileManager: FileManager = .default) {
+        self.workspace = workspace
+        self.fileManager = fileManager
+    }
+
+    func toggle(_ binding: HotkeyBinding) {
+        let action = ApplicationToggleResolver(workspace: self, windows: self)
+            .action(for: binding.target)
+
+        switch action {
+        case .hide(let processIdentifier):
+            runningApplication(processIdentifier)?.hide()
+        case .activate(let processIdentifier):
+            guard let application = runningApplication(processIdentifier) else {
+                fail(binding, "The running application disappeared before it could be activated.")
+                return
             }
-        } else if let url = resolveAppURL(appName) {
-            openOrReopen(url: url, appName: appName)
-        } else {
-            NSLog("Hotkey: Could not find application '%@'", appName)
+            application.unhide()
+            application.activate(options: [.activateIgnoringOtherApps])
+        case .reopen(let url):
+            let configuration = NSWorkspace.OpenConfiguration()
+            configuration.activates = true
+            workspace.openApplication(at: url, configuration: configuration) { [weak self] _, error in
+                if let error {
+                    self?.fail(binding, "Could not open the application: \(error.localizedDescription)")
+                }
+            }
+        case .unavailable:
+            fail(binding, "The selected application could not be found. Choose it again in Preferences.")
         }
     }
 
-    private func openOrReopen(url: URL, appName: String) {
-        let config = NSWorkspace.OpenConfiguration()
-        config.activates = true
-        NSWorkspace.shared.openApplication(at: url, configuration: config) { _, error in
-            if let error = error {
-                NSLog("Hotkey: Failed to open '%@': %@", appName, error.localizedDescription)
-            }
-        }
+    private func runningApplication(_ processIdentifier: pid_t) -> NSRunningApplication? {
+        NSRunningApplication(processIdentifier: processIdentifier)
     }
 
-    private func hasVisibleWindows(pid: pid_t) -> Bool {
+    func visibleWindowProcessIdentifiers() -> Set<Int32> {
         let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
         guard let windows = CGWindowListCopyWindowInfo(options, kCGNullWindowID)
-            as? [[String: Any]] else {
-            return false
-        }
-        return windows.contains { window in
-            guard let ownerPID = window[kCGWindowOwnerPID as String] as? pid_t,
-                  ownerPID == pid,
+            as? [[String: Any]] else { return [] }
+
+        return Set(windows.compactMap { window in
+            guard let ownerPID = window[kCGWindowOwnerPID as String] as? Int32,
                   let layer = window[kCGWindowLayer as String] as? Int,
-                  layer == 0 else {
-                return false
-            }
-            return true
+                  layer == 0 else { return nil }
+            return ownerPID
+        })
+    }
+
+    private func fail(_ binding: HotkeyBinding, _ reason: String) {
+        onFailure?(binding, reason)
+    }
+}
+
+extension WindowManager: ApplicationWorkspaceProviding, VisibleWindowProviding {
+    var runningApplicationSnapshots: [RunningApplicationSnapshot] {
+        workspace.runningApplications.map {
+            RunningApplicationSnapshot(
+                processIdentifier: $0.processIdentifier,
+                displayName: $0.localizedName,
+                bundleIdentifier: $0.bundleIdentifier,
+                bundleURL: $0.bundleURL,
+                isActive: $0.isActive
+            )
         }
     }
 
-    private func findRunningApp(named name: String) -> NSRunningApplication? {
-        NSWorkspace.shared.runningApplications.first { app in
-            app.localizedName == name
-        }
+    func resolvedApplicationURL(forBundleIdentifier bundleIdentifier: String) -> URL? {
+        workspace.urlForApplication(withBundleIdentifier: bundleIdentifier)
     }
 
-    private func resolveAppURL(_ appName: String) -> URL? {
-        if let cached = appURLCache[appName] {
-            if FileManager.default.fileExists(atPath: cached.path) {
-                return cached
-            }
-            appURLCache.removeValue(forKey: appName)
-        }
-
-        // Search standard directories
-        for dir in Self.searchDirectories {
-            let url = URL(fileURLWithPath: dir).appendingPathComponent("\(appName).app")
-            if FileManager.default.fileExists(atPath: url.path) {
-                appURLCache[appName] = url
-                return url
-            }
-        }
-
-        // Check ~/Applications
-        let homeApps = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Applications")
-            .appendingPathComponent("\(appName).app")
-        if FileManager.default.fileExists(atPath: homeApps.path) {
-            appURLCache[appName] = homeApps
-            return homeApps
-        }
-
-        // Try as bundle identifier
-        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: appName) {
-            appURLCache[appName] = url
-            return url
-        }
-
-        return nil
+    func applicationURLExists(_ url: URL) -> Bool {
+        fileManager.fileExists(atPath: url.path)
     }
 }

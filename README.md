@@ -4,61 +4,47 @@
 
 # Hotkey
 
-A lightweight macOS menu bar app that lets you toggle application visibility with global keyboard shortcuts. Define your shortcuts in a simple TOML config file.
+A lightweight macOS menu-bar app that toggles applications with global keyboard shortcuts.
 
-- **Toggle apps** — if the app isn't running, launch it. If it's in the background, bring it to front. If it's focused, hide it.
-- **Live reload** — edit your config and shortcuts update automatically, no restart needed.
-- **Launch at Login** — toggle from the menu bar dropdown.
+- **Toggle apps** — launch or reopen an app with no windows, activate a background app, or hide the focused app.
+- **Native Preferences** — add, edit, and remove shortcuts from a SwiftUI window; changes take effect immediately.
+- **Reliable targeting** — selected apps are identified by bundle identifier first, with bundle URL and display-name fallbacks.
+- **Visible errors** — registration and preferences failures appear in the menu bar, Preferences, and a non-modal details window.
+- **Launch at Login** — toggle the launch agent from the menu-bar menu.
 
 ## Install
 
-```
+```sh
 make install
 ```
 
-This builds the app and copies `Hotkey.app` to `~/Applications/`.
+This creates an unsigned release app and replaces `~/Applications/Hotkey.app`. Packaging requires ImageMagick's `magick` command.
 
-## Configuration
+## Configure shortcuts
 
-Shortcuts are defined in `~/.config/hotkey/config.toml`:
+1. Choose **Hotkey → Preferences…** or press `⌘,` while the menu is open.
+2. Select **Add Shortcut**, choose a `.app` bundle, and record a shortcut.
+3. Save. The complete shortcut set is validated and applied immediately.
 
-```toml
-[[hotkey]]
-key = ";"
-modifiers = ["control"]
-app = "Ghostty"
+A shortcut must contain a keyboard key and at least one of Command, Option, or Control. Shift can supplement those modifiers but cannot be used alone. Duplicate shortcuts are rejected.
 
-[[hotkey]]
-key = "b"
-modifiers = ["option"]
-app = "Safari"
-```
+Preferences are stored as versioned JSON data in `UserDefaults` under `hotkey.bindings.v1`. This is an intentional hard cutover from TOML: Hotkey never reads, creates, imports, watches, changes, or deletes `~/.config/hotkey/config.toml`.
 
-Each `[[hotkey]]` entry maps a keyboard shortcut to an app name. The app name should match what you see in the macOS menu bar (e.g. "Ghostty", "Safari", "Slack"). Bundle identifiers like `com.mitchellh.ghostty` also work.
+If a new shortcut set cannot be completely registered or saved, Hotkey restores the last known-good set and keeps the rejected edit visible for correction.
 
-### Keys
+## Build and test
 
-Letters (`a`-`z`), numbers (`0`-`9`), function keys (`f1`-`f20`), and special keys:
-
-`space` `return` `tab` `escape` `delete` `up` `down` `left` `right` `home` `end` `pageup` `pagedown`
-
-Punctuation: `;` `.` `,` `/` `\` `'` `=` `-` `[` `]` `` ` ``
-
-### Modifiers
-
-`command` (or `cmd`), `option` (or `alt`), `control` (or `ctrl`), `shift`
-
-## Build from source
-
-```
+```sh
 swift build
-.build/debug/Hotkey
+swift test
 ```
+
+Run the debug executable with `.build/debug/Hotkey`. Tests use fake registrars and application snapshots; they do not reserve global shortcuts or launch applications.
 
 ## Uninstall
 
-```
+```sh
 make uninstall
 ```
 
-Removes the app and the Launch at Login agent.
+This removes the installed app and its Launch at Login agent. Stored preferences and any legacy TOML file are left untouched.
