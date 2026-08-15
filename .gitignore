@@ -7,3 +7,4 @@ DerivedData/
 AppIcon.iconset/
 AppIcon.icns
 .DS_Store
+.worktrees/
