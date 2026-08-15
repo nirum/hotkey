@@ -2,15 +2,16 @@
 
 ## Project overview
 
-Hotkey is a Swift 5.9 macOS 13+ menu-bar application. `Sources/Hotkey/main.swift` creates an accessory `NSApplication`; `AppDelegate` owns the status item and coordinates configuration, Carbon global-hotkey registration, and AppKit application/window behavior.
+Hotkey is a Swift 5.9 macOS 13+ menu-bar application. `Sources/Hotkey/main.swift` creates an accessory `NSApplication`; `AppDelegate` owns the status item and coordinates native preferences, Carbon global-hotkey registration, and AppKit application/window behavior.
 
 Current source layout:
 
-- `Sources/Hotkey/AppDelegate.swift`: application lifecycle, menu, and launch-at-login support.
-- `Sources/Hotkey/ConfigManager.swift`: TOML loading and filesystem watching.
-- `Sources/Hotkey/HotkeyManager.swift`: Carbon registration and dispatch.
-- `Sources/Hotkey/WindowManager.swift`: AppKit/Quartz application toggling.
-- `Sources/Hotkey/KeyMapping.swift`: textual key/modifier conversion.
+- `Sources/HotkeyCore/`: framework-independent models, JSON preferences storage, validation, issue state, toggle decisions, and transactional registration coordination.
+- `Sources/Hotkey/AppDelegate.swift`: application lifecycle, menu/error state, and launch-at-login support.
+- `Sources/Hotkey/PreferencesWindow.swift`: SwiftUI settings UI, `.app` picker, and AppKit shortcut recorder.
+- `Sources/Hotkey/CarbonHotkeyRegistrar.swift`: Carbon registration and event dispatch adapter.
+- `Sources/Hotkey/WindowManager.swift`: AppKit/Quartz execution of core application-toggle decisions.
+- `Sources/Hotkey/IssueWindow.swift`: non-modal SwiftUI issue details.
 - `Makefile`: release build and unsigned `.app` packaging.
 
 Update this file whenever architecture, dependencies, supported platforms, or verification commands change.
@@ -26,7 +27,7 @@ Update this file whenever architecture, dependencies, supported platforms, or ve
 ## Commands
 
 - `swift build` compiles the debug executable. It does not package or install the application.
-- `swift test` compiles and runs the SwiftPM test suite. The baseline repository has no test target, so this currently reports `no tests found`.
+- `swift test` compiles and runs the SwiftPM unit suite. Tests must not register real global shortcuts, use standard user defaults, or launch applications.
 - `make install` performs a release build, creates the unsigned `Hotkey.app` bundle and icons, and replaces `~/Applications/Hotkey.app`. It requires macOS tools plus ImageMagick's `magick` command and changes the user's installed applications.
 - `make uninstall` removes the installed app and its launch agent. Treat it as destructive.
 
@@ -34,11 +35,11 @@ Before handing off a code change, run `swift build` and `swift test`. Packaging 
 
 ## Configuration and packaging
 
-The current app reads `~/.config/hotkey/config.toml`, creates an example when absent, watches it for changes, and reloads registrations. TOMLKit is the sole package dependency. The packaging target creates an unsigned menu-bar app with bundle identifier `com.hotkey.app`, minimum macOS 13, and `LSUIElement` enabled.
+Bindings are encoded as versioned JSON in `UserDefaults` under `hotkey.bindings.v1`. There are no external Swift package dependencies. The legacy `~/.config/hotkey/config.toml` is intentionally never read, created, imported, watched, modified, or deleted. The packaging target creates an unsigned menu-bar app with bundle identifier `com.hotkey.app`, minimum macOS 13, and `LSUIElement` enabled.
 
 ## macOS constraints
 
-- Global shortcuts use the legacy Carbon hot-key API. Keep Carbon flags and `EventHotKeyRef` values inside the registration adapter.
+- Global shortcuts use the legacy Carbon hot-key API. Keep Carbon flags and `EventHotKeyRef` values inside `CarbonHotkeyRegistrar`.
 - UI and lifecycle operations use AppKit and must run on the main thread.
 - Application matching and activation go through `NSWorkspace`; visible-window checks use Quartz window metadata.
 - Avoid modal error alerts in a menu-bar utility. Errors should remain inspectable without blocking input.
@@ -46,4 +47,4 @@ The current app reads `~/.config/hotkey/config.toml`, creates an example when ab
 
 ## Verification baseline
 
-On 2026-08-15, `swift build` succeeded from the isolated worktree. `swift test` built the package and then reported that no tests exist. An earlier local run under restricted cache access exposed a Swift compiler/SDK patch mismatch; if that recurs, select an Xcode or Command Line Tools installation whose Swift compiler and SDK build versions match before judging code failures.
+On 2026-08-15, the native-preferences app passed `swift build` from the isolated worktree. The installed Command Line Tools pair a slightly mismatched compiler and SDK; macro-backed SwiftUI `@State` fails because `SwiftUIMacros` is absent, so UI state intentionally uses Combine-backed observable objects. Align the compiler and SDK before introducing SDK macros or judging macro-related failures.

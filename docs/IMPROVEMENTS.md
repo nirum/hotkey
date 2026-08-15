@@ -15,15 +15,15 @@ Document architecture, layout, macOS support, SwiftPM commands, packaging, confi
 
 ## 2. Replace TOML with Native Preferences
 
-**Status:** Not started  
+**Status:** Complete  
 **Depends on:** Task 1
 
-- [ ] Add a SwiftUI Preferences window with binding list, `.app` picker, and shortcut recorder.
-- [ ] Persist versioned JSON in `UserDefaults` under `hotkey.bindings.v1`.
-- [ ] Add `HotkeyBinding`, `AppTarget`, and app-defined Codable modifiers.
-- [ ] Remove TOMLKit, `ConfigManager`, parsing, creation, and watching.
-- [ ] Leave any existing TOML file untouched and show an empty state when appropriate.
-- [ ] Update `README.md` and `AGENTS.md`.
+- [x] Add a SwiftUI Preferences window with binding list, `.app` picker, and shortcut recorder.
+- [x] Persist versioned JSON in `UserDefaults` under `hotkey.bindings.v1`.
+- [x] Add `HotkeyBinding`, `AppTarget`, and app-defined Codable modifiers.
+- [x] Remove TOMLKit, `ConfigManager`, parsing, creation, and watching.
+- [x] Leave any existing TOML file untouched and show an empty state when appropriate.
+- [x] Update `README.md` and `AGENTS.md`.
 
 Acceptance: add, edit, and remove shortcuts without files; settings survive restart; selection is limited to `.app`; old TOML is untouched; the app builds without TOMLKit.
 
@@ -98,4 +98,5 @@ Acceptance: success, rejection, partial registration, persistence rollback, and 
 
 ## Progress Log
 
+- 2026-08-15 — Task 2 — Complete; replaced TOML with native SwiftUI Preferences and versioned `UserDefaults` JSON, removed TOMLKit and filesystem configuration behavior, and verified with `swift build`.
 - 2026-08-15 — Task 1 — Complete; added repository guidance and the sequential tracker. Baseline `swift build` passed; baseline `swift test` reached the expected `no tests found` result. The earlier compiler/SDK patch mismatch did not reproduce in the isolated worktree.
