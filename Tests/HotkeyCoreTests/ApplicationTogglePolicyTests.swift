@@ -1,4 +1,3 @@
-#if canImport(XCTest)
 import Foundation
 import XCTest
 @testable import HotkeyCore
@@ -130,4 +129,3 @@ final class ApplicationTogglePolicyTests: XCTestCase {
         )
     }
 }
-#endif

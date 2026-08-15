@@ -1,4 +1,3 @@
-#if canImport(XCTest)
 import XCTest
 @testable import HotkeyCore
 
@@ -113,4 +112,3 @@ final class ShortcutAndValidationTests: XCTestCase {
         XCTAssertFalse(message.isEmpty, file: file, line: line)
     }
 }
-#endif

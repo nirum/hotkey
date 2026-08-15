@@ -1,4 +1,3 @@
-#if canImport(XCTest)
 import Foundation
 import XCTest
 @testable import HotkeyCore
@@ -46,4 +45,3 @@ final class IssueCenterTests: XCTestCase {
         XCTAssertTrue(center.issues.isEmpty)
     }
 }
-#endif

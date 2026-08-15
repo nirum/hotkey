@@ -1,4 +1,3 @@
-#if canImport(XCTest)
 import Foundation
 import XCTest
 @testable import HotkeyCore
@@ -85,4 +84,3 @@ final class PreferencesStoreTests: XCTestCase {
         XCTAssertNil(UserDefaults.standard.data(forKey: key))
     }
 }
-#endif

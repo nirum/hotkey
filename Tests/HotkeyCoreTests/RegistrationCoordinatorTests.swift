@@ -1,4 +1,3 @@
-#if canImport(XCTest)
 import Foundation
 import XCTest
 @testable import HotkeyCore
@@ -283,4 +282,3 @@ final class RegistrationCoordinatorTests: XCTestCase {
         )
     }
 }
-#endif

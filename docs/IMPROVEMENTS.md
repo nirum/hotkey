@@ -98,7 +98,7 @@ Acceptance: success, rejection, partial registration, persistence rollback, and 
 
 ## Progress Log
 
-- 2026-08-15 — Verification — All eight tasks are complete. `swift build` passes; all committed XCTest sources type-check against the built `HotkeyCore` module. Local `swift test` builds the products but cannot load the incomplete standalone Command Line Tools test runtime, so execution is delegated to the documented full-Xcode `macos-26` CI check.
+- 2026-08-15 — Verification — All eight tasks are complete. `swift build` passes; all committed XCTest sources type-check against the built `HotkeyCore` module. Local `swift test` stops because the standalone Command Line Tools omit XCTest, so execution is delegated to the documented full-Xcode `macos-26` CI check.
 - 2026-08-15 — Task 8 — Complete; preference changes now validate, swap registrations, persist, and commit as one transaction; rejected edits retain known-good state. Tests cover success, validation rejection, partial registration, persistence rollback, cleanup failure, restoration failure, and temporary-unregister failure.
 - 2026-08-15 — Task 7 — Complete; implemented bundle-ID, canonical URL, and display-name matching precedence, active-instance preference, Launch Services resolution, and injected workspace/window decision providers with tests.
 - 2026-08-15 — Task 6 — Complete; centralized shortcut rules across recorder and model validation, rejected invalid/missing/duplicate input before Carbon, and covered primary modifiers, Shift, invalid bits, missing keys, and duplicates.
