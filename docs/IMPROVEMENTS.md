@@ -51,12 +51,12 @@ Acceptance: clean checkouts build and test; failures fail CI; no signing, deploy
 
 ## 5. Add Non-Modal Error UI
 
-**Status:** Not started
+**Status:** Complete
 **Depends on:** Tasks 2–3
 
-- [ ] Share issues for preferences, validation, registration, and rollback failures.
-- [ ] Show status-item warning state, menu summary/action, details window, and inline preference errors.
-- [ ] Preserve last valid in-memory bindings after decoding failure and clear resolved errors after retry.
+- [x] Share issues for preferences, validation, registration, and rollback failures.
+- [x] Show status-item warning state, menu summary/action, details window, and inline preference errors.
+- [x] Preserve last valid in-memory bindings after decoding failure and clear resolved errors after retry.
 
 Acceptance: failures are visible and actionable without logs or modal alerts, identify bindings where possible, and state transitions are tested.
 
@@ -98,6 +98,7 @@ Acceptance: success, rejection, partial registration, persistence rollback, and 
 
 ## Progress Log
 
+- 2026-08-15 — Task 5 — Complete; added shared issue state, warning menu-bar presentation, summaries, a non-modal timestamped details window, inline binding errors, last-known-good preservation, and tested resolution transitions.
 - 2026-08-15 — Task 4 — Complete; added minimal push/PR CI with `macos-26`, `actions/checkout@v7`, read-only contents permission, superseded-run cancellation, and sequential build/test steps. Documented `Build and Test` as the required check.
 - 2026-08-15 — Task 3 — Complete; added an XCTest suite plus a conditional Swift Testing fallback for Command Line Tools installations without XCTest. Ten fallback tests passed via `swift test`; no test touched Carbon, `NSWorkspace`, standard user defaults, or real applications.
 - 2026-08-15 — Task 2 — Complete; replaced TOML with native SwiftUI Preferences and versioned `UserDefaults` JSON, removed TOMLKit and filesystem configuration behavior, and verified with `swift build`.

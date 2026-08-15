@@ -50,7 +50,7 @@ private struct IssueListView: View {
                             Label(issue.kind.title, systemImage: "exclamationmark.triangle.fill")
                                 .font(.headline)
                             Spacer()
-                            Text(issue.timestamp, style: .time)
+                            Text(issue.timestamp.formatted(date: .abbreviated, time: .standard))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
