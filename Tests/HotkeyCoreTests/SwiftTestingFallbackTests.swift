@@ -60,6 +60,16 @@ struct SwiftTestingFallbackTests {
         ]
         #expect(BindingValidator.validate(valid).isEmpty)
 
+        let shiftOnly = makeBinding(keyCode: 4, modifiers: .shift)
+        guard case .rejected(let recorderMessage) = ShortcutInterpreter.capture(
+            keyCode: shiftOnly.keyCode,
+            modifiers: shiftOnly.modifiers
+        ) else {
+            Issue.record("Expected recorder rejection")
+            return
+        }
+        #expect(BindingValidator.validate([shiftOnly]).first?.message == recorderMessage)
+
         let duplicate = makeBinding(
             name: "Other",
             bundleIdentifier: "com.example.other",
@@ -217,6 +227,13 @@ struct SwiftTestingFallbackTests {
             resolvedBundleURL: nil,
             storedURLExists: false
         ) == .unavailable)
+
+        let workspace = FakeApplicationWorkspace()
+        let windows = FakeVisibleWindows()
+        workspace.runningApplicationSnapshots = [background]
+        windows.processIdentifiers = [11]
+        #expect(ApplicationToggleResolver(workspace: workspace, windows: windows)
+            .action(for: target) == .activate(processIdentifier: 11))
     }
 
     @Test("Issue state deduplicates and resolves")

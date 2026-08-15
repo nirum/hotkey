@@ -87,6 +87,18 @@ final class ApplicationTogglePolicyTests: XCTestCase {
         XCTAssertEqual(decide(running: [], storedExists: false), .unavailable)
     }
 
+    func testResolverUsesInjectedWorkspaceAndWindowProviders() {
+        let workspace = FakeApplicationWorkspace()
+        let windows = FakeVisibleWindows()
+        workspace.runningApplicationSnapshots = [app(pid: 42, active: false)]
+        windows.processIdentifiers = [42]
+
+        let action = ApplicationToggleResolver(workspace: workspace, windows: windows)
+            .action(for: makeTarget())
+
+        XCTAssertEqual(action, .activate(processIdentifier: 42))
+    }
+
     private func decide(
         running: [RunningApplicationSnapshot],
         visible: Set<Int32> = [],

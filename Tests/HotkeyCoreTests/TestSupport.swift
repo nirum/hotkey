@@ -74,6 +74,28 @@ final class FakeRegistrar: HotkeyRegistering {
     }
 }
 
+final class FakeApplicationWorkspace: ApplicationWorkspaceProviding {
+    var runningApplicationSnapshots: [RunningApplicationSnapshot] = []
+    var resolvedURLs: [String: URL] = [:]
+    var existingURLs: Set<URL> = []
+
+    func resolvedApplicationURL(forBundleIdentifier bundleIdentifier: String) -> URL? {
+        resolvedURLs[bundleIdentifier]
+    }
+
+    func applicationURLExists(_ url: URL) -> Bool {
+        existingURLs.contains(url)
+    }
+}
+
+final class FakeVisibleWindows: VisibleWindowProviding {
+    var processIdentifiers: Set<Int32> = []
+
+    func visibleWindowProcessIdentifiers() -> Set<Int32> {
+        processIdentifiers
+    }
+}
+
 func makeTarget(
     name: String = "Example",
     bundleIdentifier: String? = "com.example.app",

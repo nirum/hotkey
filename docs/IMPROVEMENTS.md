@@ -62,24 +62,24 @@ Acceptance: failures are visible and actionable without logs or modal alerts, id
 
 ## 6. Enforce Modifier and Shortcut Validity
 
-**Status:** Not started
+**Status:** Complete
 **Depends on:** Tasks 3 and 5
 
-- [ ] Centralize validation for recorder, persistence, and registration.
-- [ ] Require Command, Option, or Control; permit Shift only as a supplement.
-- [ ] Reject missing/modifier-only keys, unsupported bits, and duplicate combinations.
-- [ ] Treat occupied/reserved combinations as registration failures.
+- [x] Centralize validation for recorder, persistence, and registration.
+- [x] Require Command, Option, or Control; permit Shift only as a supplement.
+- [x] Reject missing/modifier-only keys, unsupported bits, and duplicate combinations.
+- [x] Treat occupied/reserved combinations as registration failures.
 
 Acceptance: invalid input has inline feedback and cannot be saved or applied; persisted data cannot bypass checks; all modifier cases are tested.
 
 ## 7. Make Bundle-Identifier Targeting Reliable
 
-**Status:** Not started
+**Status:** Complete
 **Depends on:** Tasks 2–3
 
-- [ ] Match bundle identifier, canonical selected URL, then display name; prefer active matches.
-- [ ] Resolve bundle identifiers through Launch Services before stored URLs.
-- [ ] Preserve hide, activate, and reopen behavior across all match paths.
+- [x] Match bundle identifier, canonical selected URL, then display name; prefer active matches.
+- [x] Resolve bundle identifiers through Launch Services before stored URLs.
+- [x] Preserve hide, activate, and reopen behavior across all match paths.
 
 Acceptance: repeated toggles, moves/renames, identifier-less apps, and matching precedence are covered.
 
@@ -98,6 +98,8 @@ Acceptance: success, rejection, partial registration, persistence rollback, and 
 
 ## Progress Log
 
+- 2026-08-15 — Task 7 — Complete; implemented bundle-ID, canonical URL, and display-name matching precedence, active-instance preference, Launch Services resolution, and injected workspace/window decision providers with tests.
+- 2026-08-15 — Task 6 — Complete; centralized shortcut rules across recorder and model validation, rejected invalid/missing/duplicate input before Carbon, and covered primary modifiers, Shift, invalid bits, missing keys, and duplicates.
 - 2026-08-15 — Task 5 — Complete; added shared issue state, warning menu-bar presentation, summaries, a non-modal timestamped details window, inline binding errors, last-known-good preservation, and tested resolution transitions.
 - 2026-08-15 — Task 4 — Complete; added minimal push/PR CI with `macos-26`, `actions/checkout@v7`, read-only contents permission, superseded-run cancellation, and sequential build/test steps. Documented `Build and Test` as the required check.
 - 2026-08-15 — Task 3 — Complete; added an XCTest suite plus a conditional Swift Testing fallback for Command Line Tools installations without XCTest. Ten fallback tests passed via `swift test`; no test touched Carbon, `NSWorkspace`, standard user defaults, or real applications.

@@ -29,6 +29,42 @@ public enum ApplicationToggleAction: Equatable, Sendable {
     case unavailable
 }
 
+public protocol ApplicationWorkspaceProviding: AnyObject {
+    var runningApplicationSnapshots: [RunningApplicationSnapshot] { get }
+    func resolvedApplicationURL(forBundleIdentifier bundleIdentifier: String) -> URL?
+    func applicationURLExists(_ url: URL) -> Bool
+}
+
+public protocol VisibleWindowProviding: AnyObject {
+    func visibleWindowProcessIdentifiers() -> Set<Int32>
+}
+
+public struct ApplicationToggleResolver {
+    private let workspace: ApplicationWorkspaceProviding
+    private let windows: VisibleWindowProviding
+
+    public init(
+        workspace: ApplicationWorkspaceProviding,
+        windows: VisibleWindowProviding
+    ) {
+        self.workspace = workspace
+        self.windows = windows
+    }
+
+    public func action(for target: AppTarget) -> ApplicationToggleAction {
+        let resolvedURL = target.bundleIdentifier.flatMap {
+            workspace.resolvedApplicationURL(forBundleIdentifier: $0)
+        }
+        return ApplicationTogglePolicy.decide(
+            target: target,
+            runningApplications: workspace.runningApplicationSnapshots,
+            visibleWindowProcessIDs: windows.visibleWindowProcessIdentifiers(),
+            resolvedBundleURL: resolvedURL,
+            storedURLExists: workspace.applicationURLExists(target.applicationURL)
+        )
+    }
+}
+
 public enum ApplicationTogglePolicy {
     public static func decide(
         target: AppTarget,

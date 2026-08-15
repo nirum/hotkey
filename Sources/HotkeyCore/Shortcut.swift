@@ -21,18 +21,14 @@ public enum ShortcutInterpreter {
         modifiers: ShortcutModifiers,
         isModifierOnly: Bool = false
     ) -> ShortcutCaptureResult {
-        if isModifierOnly || keyCode == nil {
-            return .rejected("Press a key together with Command, Option, or Control.")
+        if let violation = ShortcutRules.validate(
+            keyCode: keyCode,
+            modifiers: modifiers,
+            isModifierOnly: isModifierOnly
+        ).first {
+            return .rejected(violation.message)
         }
-        if !modifiers.subtracting(.supported).isEmpty {
-            return .rejected("This shortcut contains unsupported modifier keys.")
-        }
-        if modifiers.intersection(.primary).isEmpty {
-            return .rejected("Add Command, Option, or Control. Shift cannot be used alone.")
-        }
-        guard let keyCode, keyCode <= 127 else {
-            return .rejected("Choose a supported keyboard key.")
-        }
+        guard let keyCode else { return .rejected("Choose a supported keyboard key.") }
         return .accepted(RecordedShortcut(keyCode: keyCode, modifiers: modifiers))
     }
 }

@@ -13,28 +13,8 @@ final class WindowManager {
     }
 
     func toggle(_ binding: HotkeyBinding) {
-        let target = binding.target
-        let running = workspace.runningApplications.map {
-            RunningApplicationSnapshot(
-                processIdentifier: $0.processIdentifier,
-                displayName: $0.localizedName,
-                bundleIdentifier: $0.bundleIdentifier,
-                bundleURL: $0.bundleURL,
-                isActive: $0.isActive
-            )
-        }
-        let visiblePIDs = visibleWindowProcessIDs()
-        let resolvedURL = target.bundleIdentifier.flatMap {
-            workspace.urlForApplication(withBundleIdentifier: $0)
-        }
-        let storedExists = fileManager.fileExists(atPath: target.applicationURL.path)
-        let action = ApplicationTogglePolicy.decide(
-            target: target,
-            runningApplications: running,
-            visibleWindowProcessIDs: visiblePIDs,
-            resolvedBundleURL: resolvedURL,
-            storedURLExists: storedExists
-        )
+        let action = ApplicationToggleResolver(workspace: self, windows: self)
+            .action(for: binding.target)
 
         switch action {
         case .hide(let processIdentifier):
@@ -63,7 +43,7 @@ final class WindowManager {
         NSRunningApplication(processIdentifier: processIdentifier)
     }
 
-    private func visibleWindowProcessIDs() -> Set<Int32> {
+    func visibleWindowProcessIdentifiers() -> Set<Int32> {
         let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
         guard let windows = CGWindowListCopyWindowInfo(options, kCGNullWindowID)
             as? [[String: Any]] else { return [] }
@@ -78,5 +58,27 @@ final class WindowManager {
 
     private func fail(_ binding: HotkeyBinding, _ reason: String) {
         onFailure?(binding, reason)
+    }
+}
+
+extension WindowManager: ApplicationWorkspaceProviding, VisibleWindowProviding {
+    var runningApplicationSnapshots: [RunningApplicationSnapshot] {
+        workspace.runningApplications.map {
+            RunningApplicationSnapshot(
+                processIdentifier: $0.processIdentifier,
+                displayName: $0.localizedName,
+                bundleIdentifier: $0.bundleIdentifier,
+                bundleURL: $0.bundleURL,
+                isActive: $0.isActive
+            )
+        }
+    }
+
+    func resolvedApplicationURL(forBundleIdentifier bundleIdentifier: String) -> URL? {
+        workspace.urlForApplication(withBundleIdentifier: bundleIdentifier)
+    }
+
+    func applicationURLExists(_ url: URL) -> Bool {
+        fileManager.fileExists(atPath: url.path)
     }
 }

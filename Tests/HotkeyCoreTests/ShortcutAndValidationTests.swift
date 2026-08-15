@@ -90,6 +90,18 @@ final class ShortcutAndValidationTests: XCTestCase {
         XCTAssertEqual(failures.first?.code, .duplicateShortcut)
     }
 
+    func testRecorderAndBindingValidationShareShortcutRules() {
+        let binding = makeBinding(keyCode: 0, modifiers: .shift)
+        let modelFailure = BindingValidator.validate([binding]).first
+        guard case .rejected(let recorderMessage) = ShortcutInterpreter.capture(
+            keyCode: binding.keyCode,
+            modifiers: binding.modifiers
+        ) else {
+            return XCTFail("Expected recorder rejection")
+        }
+        XCTAssertEqual(modelFailure?.message, recorderMessage)
+    }
+
     private func assertRejected(
         _ result: ShortcutCaptureResult,
         file: StaticString = #filePath,
