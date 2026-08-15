@@ -8,13 +8,19 @@ let package = Package(
     products: [
         .executable(name: "Hotkey", targets: ["Hotkey"]),
     ],
-    dependencies: [
-        .package(url: "https://github.com/LebJe/TOMLKit", from: "0.6.0"),
-    ],
     targets: [
+        .target(
+            name: "HotkeyCore",
+            swiftSettings: [.enableExperimentalFeature("StrictConcurrency=minimal")]
+        ),
         .executableTarget(
             name: "Hotkey",
-            dependencies: ["TOMLKit"],
+            dependencies: ["HotkeyCore"],
+            swiftSettings: [.enableExperimentalFeature("StrictConcurrency=minimal")]
+        ),
+        .testTarget(
+            name: "HotkeyCoreTests",
+            dependencies: ["HotkeyCore"],
             swiftSettings: [.enableExperimentalFeature("StrictConcurrency=minimal")]
         ),
     ]
