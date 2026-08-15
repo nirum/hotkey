@@ -7,6 +7,7 @@
 A lightweight macOS menu-bar app that toggles applications with global keyboard shortcuts.
 
 - **Toggle apps** — launch or reopen an app with no windows, activate a background app, or hide the focused app.
+- **Menu shortcuts** — open the menu and click any configured application to toggle it without using the keyboard.
 - **Native Preferences** — add, edit, and remove shortcuts from a SwiftUI window; changes take effect immediately.
 - **Reliable targeting** — selected apps are identified by bundle identifier first, with bundle URL and display-name fallbacks.
 - **Visible errors** — registration and preferences failures appear in the menu bar, Preferences, and a non-modal details window.
@@ -25,6 +26,8 @@ This creates an unsigned release app and replaces `~/Applications/Hotkey.app`. P
 1. Choose **Hotkey → Preferences…** or press `⌘,` while the menu is open.
 2. Select **Add Shortcut**, choose a `.app` bundle, and record a shortcut.
 3. Save. The complete shortcut set is validated and applied immediately.
+
+Configured applications also appear above **Quit Hotkey** in the menu, in preference order. Click an application there to perform the same toggle as its global shortcut.
 
 A shortcut must contain a keyboard key and at least one of Command, Option, or Control. Shift can supplement those modifiers but cannot be used alone. Duplicate shortcuts are rejected.
 
