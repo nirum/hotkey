@@ -55,11 +55,15 @@ public enum ShortcutDisplay {
     }
 
     public static func string(keyCode: UInt32, modifiers: ShortcutModifiers) -> String {
+        modifierString(modifiers) + keyName(for: keyCode)
+    }
+
+    package static func modifierString(_ modifiers: ShortcutModifiers) -> String {
         var result = ""
         if modifiers.contains(.control) { result += "⌃" }
         if modifiers.contains(.option) { result += "⌥" }
         if modifiers.contains(.shift) { result += "⇧" }
         if modifiers.contains(.command) { result += "⌘" }
-        return result + keyName(for: keyCode)
+        return result
     }
 }
