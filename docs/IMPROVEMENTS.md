@@ -85,19 +85,20 @@ Acceptance: repeated toggles, moves/renames, identifier-less apps, and matching 
 
 ## 8. Apply Preference Changes Transactionally
 
-**Status:** Not started
+**Status:** Complete
 **Depends on:** Tasks 5–7
 
-- [ ] Validate the complete proposed set before registration changes.
-- [ ] Register all-or-rollback, then persist only a completely registered set.
-- [ ] Keep rejected edits visible and active/persisted settings unchanged.
-- [ ] Report cleanup or restoration failures distinctly.
-- [ ] Apply successful CRUD without restart.
+- [x] Validate the complete proposed set before registration changes.
+- [x] Register all-or-rollback, then persist only a completely registered set.
+- [x] Keep rejected edits visible and active/persisted settings unchanged.
+- [x] Report cleanup or restoration failures distinctly.
+- [x] Apply successful CRUD without restart.
 
 Acceptance: success, rejection, partial registration, persistence rollback, and rollback-failure paths are tested.
 
 ## Progress Log
 
+- 2026-08-15 — Task 8 — Complete; preference changes now validate, swap registrations, persist, and commit as one transaction; rejected edits retain known-good state. Tests cover success, validation rejection, partial registration, persistence rollback, cleanup failure, restoration failure, and temporary-unregister failure.
 - 2026-08-15 — Task 7 — Complete; implemented bundle-ID, canonical URL, and display-name matching precedence, active-instance preference, Launch Services resolution, and injected workspace/window decision providers with tests.
 - 2026-08-15 — Task 6 — Complete; centralized shortcut rules across recorder and model validation, rejected invalid/missing/duplicate input before Carbon, and covered primary modifiers, Shift, invalid bits, missing keys, and duplicates.
 - 2026-08-15 — Task 5 — Complete; added shared issue state, warning menu-bar presentation, summaries, a non-modal timestamped details window, inline binding errors, last-known-good preservation, and tested resolution transitions.

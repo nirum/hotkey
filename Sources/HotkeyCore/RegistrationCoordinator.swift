@@ -172,7 +172,10 @@ public final class RegistrationCoordinator {
 
         activeBindings = proposed
         registrations = proposedRegistrations
-        issueCenter.clearAll()
+        issueCenter.clear(kind: .preferences)
+        issueCenter.clear(kind: .validation)
+        issueCenter.clear(kind: .registration)
+        issueCenter.clear(kind: .rollback)
         return .applied
     }
 

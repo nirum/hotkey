@@ -106,6 +106,7 @@ final class RegistrationCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(coordinator.activeBindings, [old])
         XCTAssertEqual(store.stored, [old])
+        XCTAssertTrue(store.saveCalls.isEmpty)
         XCTAssertEqual(Set(registrar.active.values), [old])
         XCTAssertTrue(registrar.unregisterCalls.contains(first))
         XCTAssertEqual(issues.issues.first?.kind, .registration)
@@ -152,6 +153,50 @@ final class RegistrationCoordinatorTests: XCTestCase {
         XCTAssertTrue(issues.issues.contains { $0.reason.contains("restore") })
     }
 
+    func testPartialRegistrationCleanupFailureIsRollbackFailure() {
+        let old = makeBinding(keyCode: 0)
+        let partial = makeBinding(keyCode: 1)
+        let failing = makeBinding(keyCode: 2)
+        let store = FakePreferencesStore(stored: [old])
+        let registrar = FakeRegistrar()
+        registrar.registerFailure = { binding, _ in
+            binding.id == failing.id ? registrationFailure(binding) : nil
+        }
+        registrar.unregisterFailure = { binding, _ in
+            binding.id == partial.id ? registrationFailure(binding, "cleanup failed") : nil
+        }
+        let issues = IssueCenter()
+        let coordinator = makeCoordinator(store: store, registrar: registrar, issues: issues)
+        XCTAssertEqual(coordinator.start(), .applied)
+
+        XCTAssertEqual(coordinator.apply([partial, failing]), .rollbackFailed)
+        XCTAssertEqual(coordinator.activeBindings, [old])
+        XCTAssertEqual(store.stored, [old])
+        XCTAssertTrue(issues.issues.contains {
+            $0.kind == .rollback && $0.reason.contains("partially registered")
+        })
+    }
+
+    func testTemporaryUnregisterFailureRestoresKnownGoodSet() {
+        let first = makeBinding(keyCode: 0)
+        let second = makeBinding(keyCode: 1)
+        let proposed = makeBinding(keyCode: 2)
+        let store = FakePreferencesStore(stored: [first, second])
+        let registrar = FakeRegistrar()
+        let issues = IssueCenter()
+        let coordinator = makeCoordinator(store: store, registrar: registrar, issues: issues)
+        XCTAssertEqual(coordinator.start(), .applied)
+        registrar.unregisterFailure = { binding, _ in
+            binding.id == second.id ? registrationFailure(binding, "unregister failed") : nil
+        }
+
+        XCTAssertEqual(coordinator.apply([proposed]), .rejected)
+        XCTAssertEqual(coordinator.activeBindings, [first, second])
+        XCTAssertEqual(store.stored, [first, second])
+        XCTAssertEqual(Set(registrar.active.values), Set([first, second]))
+        XCTAssertTrue(issues.issues.contains { $0.kind == .registration })
+    }
+
     func testCorruptReloadKeepsLastValidInMemoryBindings() {
         let original = makeBinding()
         let store = FakePreferencesStore(stored: [original])
@@ -182,6 +227,19 @@ final class RegistrationCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(coordinator.apply([binding]), .applied)
         XCTAssertTrue(issues.issues.isEmpty)
+    }
+
+    func testSuccessfulRetryPreservesUnrelatedApplicationIssue() {
+        let binding = makeBinding()
+        let store = FakePreferencesStore()
+        let registrar = FakeRegistrar()
+        let issues = IssueCenter(issues: [
+            .init(kind: .application, reason: "app missing", suggestion: "choose app")
+        ])
+        let coordinator = makeCoordinator(store: store, registrar: registrar, issues: issues)
+
+        XCTAssertEqual(coordinator.apply([binding]), .applied)
+        XCTAssertEqual(issues.issues.map(\.kind), [.application])
     }
 
     func testCorruptPersistedValuesCannotBypassValidation() {

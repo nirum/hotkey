@@ -125,8 +125,23 @@ struct SwiftTestingFallbackTests {
         #expect(coordinator.apply([first, failing]) == .rejected)
         #expect(coordinator.activeBindings == [old])
         #expect(store.stored == [old])
+        #expect(store.saveCalls.isEmpty)
         #expect(Set(registrar.active.values) == [old])
         #expect(issues.issues.contains { $0.kind == .registration })
+
+        let cleanupStore = FakePreferencesStore(stored: [old])
+        let cleanupRegistrar = FakeRegistrar()
+        cleanupRegistrar.registerFailure = { binding, _ in
+            binding.id == failing.id ? registrationFailure(binding) : nil
+        }
+        cleanupRegistrar.unregisterFailure = { binding, _ in
+            binding.id == first.id ? registrationFailure(binding, "cleanup failed") : nil
+        }
+        let cleanupIssues = IssueCenter()
+        let cleanupCoordinator = makeCoordinator(cleanupStore, cleanupRegistrar, cleanupIssues)
+        #expect(cleanupCoordinator.start() == .applied)
+        #expect(cleanupCoordinator.apply([first, failing]) == .rollbackFailed)
+        #expect(cleanupIssues.issues.contains { $0.kind == .rollback })
     }
 
     @Test("Persistence rejection rolls back and successful retry clears issues")
@@ -147,6 +162,10 @@ struct SwiftTestingFallbackTests {
         store.saveError = nil
         #expect(coordinator.apply([proposed]) == .applied)
         #expect(issues.issues.isEmpty)
+
+        issues.report(.init(kind: .application, reason: "missing", suggestion: "choose app"))
+        #expect(coordinator.apply([proposed]) == .applied)
+        #expect(issues.issues.map(\.kind) == [.application])
     }
 
     @Test("Rollback failure and corrupt reload retain known-good state")
