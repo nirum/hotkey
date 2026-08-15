@@ -12,6 +12,7 @@ Current source layout:
 - `Sources/Hotkey/CarbonHotkeyRegistrar.swift`: Carbon registration and event dispatch adapter.
 - `Sources/Hotkey/WindowManager.swift`: AppKit/Quartz execution of core application-toggle decisions.
 - `Sources/Hotkey/IssueWindow.swift`: non-modal SwiftUI issue details.
+- `Tests/HotkeyCoreTests/`: XCTest coverage for core policy and transactional state. A conditional Swift Testing fallback covers environments whose standalone Command Line Tools omit XCTest.
 - `Makefile`: release build and unsigned `.app` packaging.
 
 Update this file whenever architecture, dependencies, supported platforms, or verification commands change.
@@ -47,4 +48,4 @@ Bindings are encoded as versioned JSON in `UserDefaults` under `hotkey.bindings.
 
 ## Verification baseline
 
-On 2026-08-15, the native-preferences app passed `swift build` from the isolated worktree. The installed Command Line Tools pair a slightly mismatched compiler and SDK; macro-backed SwiftUI `@State` fails because `SwiftUIMacros` is absent, so UI state intentionally uses Combine-backed observable objects. Align the compiler and SDK before introducing SDK macros or judging macro-related failures.
+On 2026-08-15, the native-preferences app passed `swift build`, and all 10 locally available tests passed. The installed Command Line Tools pair a slightly mismatched compiler and SDK: they omit XCTest, omit `SwiftUIMacros`, and do not automatically embed `Testing.framework`. The repository keeps XCTest for full-Xcode/CI builds and conditionally exposes Swift Testing coverage for this CLT variant. Align the compiler and SDK before introducing SDK macros or judging framework-load failures; never commit copied toolchain frameworks from `.build`.

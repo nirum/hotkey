@@ -18,5 +18,10 @@ let package = Package(
             dependencies: ["HotkeyCore"],
             swiftSettings: [.enableExperimentalFeature("StrictConcurrency=minimal")]
         ),
+        .testTarget(
+            name: "HotkeyCoreTests",
+            dependencies: ["HotkeyCore"],
+            swiftSettings: [.enableExperimentalFeature("StrictConcurrency=minimal")]
+        ),
     ]
 )

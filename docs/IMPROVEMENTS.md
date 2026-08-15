@@ -15,7 +15,7 @@ Document architecture, layout, macOS support, SwiftPM commands, packaging, confi
 
 ## 2. Replace TOML with Native Preferences
 
-**Status:** Complete  
+**Status:** Complete
 **Depends on:** Task 1
 
 - [x] Add a SwiftUI Preferences window with binding list, `.app` picker, and shortcut recorder.
@@ -29,18 +29,18 @@ Acceptance: add, edit, and remove shortcuts without files; settings survive rest
 
 ## 3. Add Automated Tests
 
-**Status:** Not started  
+**Status:** Complete
 **Depends on:** Task 2
 
-- [ ] Isolate storage, registration, shortcut, validation, toggle, and preference-state policy behind small protocols.
-- [ ] Test serialization, schema handling, corrupt data, shortcut recording/display, validation, duplicates, registration paths, toggle decisions, CRUD, restart, and empty preferences.
-- [ ] Keep tests independent of real global shortcuts, app launches, and the user's defaults.
+- [x] Isolate storage, registration, shortcut, validation, toggle, and preference-state policy behind small protocols.
+- [x] Test serialization, schema handling, corrupt data, shortcut recording/display, validation, duplicates, registration paths, toggle decisions, CRUD, restart, and empty preferences.
+- [x] Keep tests independent of real global shortcuts, app launches, and the user's defaults.
 
 Acceptance: `swift test` is deterministic; platform adapters remain thin and receive manual smoke testing.
 
 ## 4. Add GitHub Actions CI
 
-**Status:** Not started  
+**Status:** Not started
 **Depends on:** Task 3
 
 - [ ] Add push and pull-request CI on `macos-26`.
@@ -51,7 +51,7 @@ Acceptance: clean checkouts build and test; failures fail CI; no signing, deploy
 
 ## 5. Add Non-Modal Error UI
 
-**Status:** Not started  
+**Status:** Not started
 **Depends on:** Tasks 2–3
 
 - [ ] Share issues for preferences, validation, registration, and rollback failures.
@@ -62,7 +62,7 @@ Acceptance: failures are visible and actionable without logs or modal alerts, id
 
 ## 6. Enforce Modifier and Shortcut Validity
 
-**Status:** Not started  
+**Status:** Not started
 **Depends on:** Tasks 3 and 5
 
 - [ ] Centralize validation for recorder, persistence, and registration.
@@ -74,7 +74,7 @@ Acceptance: invalid input has inline feedback and cannot be saved or applied; pe
 
 ## 7. Make Bundle-Identifier Targeting Reliable
 
-**Status:** Not started  
+**Status:** Not started
 **Depends on:** Tasks 2–3
 
 - [ ] Match bundle identifier, canonical selected URL, then display name; prefer active matches.
@@ -85,7 +85,7 @@ Acceptance: repeated toggles, moves/renames, identifier-less apps, and matching 
 
 ## 8. Apply Preference Changes Transactionally
 
-**Status:** Not started  
+**Status:** Not started
 **Depends on:** Tasks 5–7
 
 - [ ] Validate the complete proposed set before registration changes.
@@ -98,5 +98,6 @@ Acceptance: success, rejection, partial registration, persistence rollback, and 
 
 ## Progress Log
 
+- 2026-08-15 — Task 3 — Complete; added an XCTest suite plus a conditional Swift Testing fallback for Command Line Tools installations without XCTest. Ten fallback tests passed via `swift test`; no test touched Carbon, `NSWorkspace`, standard user defaults, or real applications.
 - 2026-08-15 — Task 2 — Complete; replaced TOML with native SwiftUI Preferences and versioned `UserDefaults` JSON, removed TOMLKit and filesystem configuration behavior, and verified with `swift build`.
 - 2026-08-15 — Task 1 — Complete; added repository guidance and the sequential tracker. Baseline `swift build` passed; baseline `swift test` reached the expected `no tests found` result. The earlier compiler/SDK patch mismatch did not reproduce in the isolated worktree.
