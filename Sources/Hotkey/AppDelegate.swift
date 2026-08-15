@@ -33,13 +33,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupMenuBar() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        // The ⌘H lockup is wider than it is tall, so the item sizes itself to the
+        // image instead of being squeezed into a 22pt square.
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
             if let iconPath = Bundle.main.path(forResource: "menubar-icon@2x", ofType: "png"),
                let icon = NSImage(contentsOfFile: iconPath) {
-                icon.size = NSSize(width: 22, height: 22)
-                icon.isTemplate = false
+                icon.size = NSSize(width: 28, height: 22)
+                // Template images are tinted by AppKit for the light and dark menu
+                // bar and inverted while the menu is open. Colour images are not.
+                icon.isTemplate = true
+                icon.accessibilityDescription = "Hotkey"
                 button.image = icon
             } else {
                 button.image = NSImage(
