@@ -13,7 +13,7 @@ Current source layout:
 - `Sources/Hotkey/WindowManager.swift`: AppKit/Quartz execution of core application-toggle decisions.
 - `Sources/Hotkey/IssueWindow.swift`: non-modal SwiftUI issue details.
 - `Tests/HotkeyCoreTests/`: XCTest coverage for core policy and transactional state.
-- `Makefile`: release build and unsigned `.app` packaging.
+- `Makefile`: versioned release builds plus unsigned `.app` and DMG packaging.
 
 Update this file whenever architecture, dependencies, supported platforms, or verification commands change.
 
@@ -29,16 +29,18 @@ Update this file whenever architecture, dependencies, supported platforms, or ve
 
 - `swift build` compiles the debug executable. It does not package or install the application.
 - `swift test` compiles and runs the SwiftPM unit suite. Tests must not register real global shortcuts, use standard user defaults, or launch applications.
-- `make install` performs a release build, creates the unsigned `Hotkey.app` bundle and icons, and replaces `~/Applications/Hotkey.app`. It requires macOS tools plus ImageMagick's `magick` command and changes the user's installed applications.
+- `make app VERSION=<major.minor.patch> ARCH=<native-arch>` performs a release build and creates an unsigned, versioned `Hotkey.app`. It requires macOS packaging tools plus `librsvg`'s `rsvg-convert`.
+- `make dmg VERSION=<major.minor.patch> ARCH=arm64` creates `dist/Hotkey-v<version>-arm64.dmg` and its `.sha256` checksum. The DMG contains the app and an `/Applications` symlink.
+- `make install` builds the unsigned app with local defaults (`VERSION=0.0.0` and the host architecture) and replaces `~/Applications/Hotkey.app`.
 - `make uninstall` removes the installed app and its launch agent. Treat it as destructive.
 
-Before handing off a code change, run `swift build` and `swift test`. Packaging changes also require `make app` or `make install` plus a manual launch smoke test.
+Before handing off a code change, run `swift build` and `swift test`. Packaging changes also require `make dmg VERSION=0.1.0 ARCH=arm64`, bundle-version and architecture checks, `hdiutil verify`, a read-only mount/layout check, checksum verification, and a manual launch smoke test.
 
-GitHub Actions runs those commands on the `macos-26` runner for every push and pull request. Protect the default branch with the `Build and Test` job as a required check. CI intentionally has no signing, packaging, deployment, or release responsibility.
+GitHub Actions runs build and test on the `macos-26` runner for every push and pull request. Protect the default branch with the `Build and Test` job as a required check. A separate release workflow accepts only annotated `vMAJOR.MINOR.PATCH` tags whose commits belong to `main`; it builds, tests, validates, and publishes the ARM64 DMG and checksum as the latest GitHub Release.
 
 ## Configuration and packaging
 
-Bindings are encoded as versioned JSON in `UserDefaults` under `hotkey.bindings.v1`. There are no external Swift package dependencies. The legacy `~/.config/hotkey/config.toml` is intentionally never read, created, imported, watched, modified, or deleted. The packaging target creates an unsigned menu-bar app with bundle identifier `com.hotkey.app`, minimum macOS 13, and `LSUIElement` enabled.
+Bindings are encoded as versioned JSON in `UserDefaults` under `hotkey.bindings.v1`. There are no external Swift package dependencies. Packaging requires `librsvg`; all other packaging and verification tools are provided by macOS. The legacy `~/.config/hotkey/config.toml` is intentionally never read, created, imported, watched, modified, or deleted. Packaging creates an unsigned and unnotarized menu-bar app with bundle identifier `com.hotkey.app`, minimum macOS 13, and `LSUIElement` enabled. Do not add signing credentials or configuration without an explicitly approved signing design.
 
 ## macOS constraints
 
@@ -50,4 +52,4 @@ Bindings are encoded as versioned JSON in `UserDefaults` under `hotkey.bindings.
 
 ## Verification baseline
 
-On 2026-08-15, the native-preferences app passed `swift build`. The installed standalone Command Line Tools pair a slightly mismatched compiler and SDK: they omit XCTest and `SwiftUIMacros`, so local `swift test` stops at the missing XCTest module. The full core scenarios were exercised successfully with a temporary local Swift Testing harness during implementation, but that toolchain also fails to embed its own Testing runtime without manual intervention. Use a matching full Xcode toolchain before judging test or macro failures; CI's `macos-26` image provides that environment.
+On 2026-08-17, the current Apple Silicon development environment passed `swift build` and all 53 XCTest cases. Release changes must also pass the DMG verification listed above on Apple Silicon. The tag workflow repeats those checks on the ARM64 `macos-26` runner before publication. Signing and notarization remain intentionally absent.
