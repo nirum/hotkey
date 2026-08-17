@@ -122,8 +122,25 @@ Acceptance: the next menu opening reflects successful add, edit, and delete oper
 
 Acceptance: release events preserve the accepted chord; invalid and repeated events cannot replace it; mouse Save and Return Save both receive the accepted draft.
 
+## 11. Publish ARM64 GitHub Releases
+
+**Status:** Complete
+**Depends on:** Tasks 4 and 10
+
+- [x] Add version and architecture inputs to unsigned app packaging and inject both bundle version keys.
+- [x] Create a compressed ARM64 DMG containing `Hotkey.app` and an `/Applications` symlink.
+- [x] Generate a stable, versioned SHA-256 checksum beside the DMG in `dist/`.
+- [x] Add tag-driven publication for annotated `vMAJOR.MINOR.PATCH` tags whose commits belong to `main`.
+- [x] Build, test, and validate bundle metadata, ARM64 architecture, DMG integrity/layout, and checksum before publication.
+- [x] Publish the DMG and checksum as the latest GitHub Release without signing, notarization, or overwrite behavior.
+- [x] Document Apple Silicon support, checksum verification, Gatekeeper override risks, `librsvg`, and the maintainer release command.
+
+Acceptance: `make dmg VERSION=0.1.0 ARCH=arm64` produces the named DMG and checksum; local validation passes; pushing a new annotated stable tag from `main` publishes both assets only after the ARM64 release job passes.
+
 ## Progress Log
 
+- 2026-08-17 — Task 11 — Complete; added unsigned versioned ARM64 DMG packaging, SHA-256 generation, full artifact validation, and latest-release publication from annotated stable tags on `main`. Packaging uses `librsvg`; signing and notarization remain future work.
+- 2026-08-17 — Verification — `swift build` and all 53 XCTest cases pass with the current Apple Silicon toolchain. The ARM64 DMG, bundle metadata, executable slice, mounted app/Applications layout, and generated checksum pass local validation.
 - 2026-08-15 — Task 10 — Complete; shortcut recording now accepts one valid chord, updates the draft atomically, ends recording before release events, preserves valid values across invalid input and cancellation, and restores Return to Save.
 - 2026-08-15 — Task 9 — Complete; configured applications now appear in preference order above Quit with color icons and native shortcut equivalents, mouse selection uses the existing toggle path, and rejected edits remain excluded by reading the active coordinator snapshot.
 - 2026-08-15 — Verification — All eight tasks are complete. `swift build` passes; all committed XCTest sources type-check against the built `HotkeyCore` module. Local `swift test` stops because the standalone Command Line Tools omit XCTest, so execution is delegated to the documented full-Xcode `macos-26` CI check.
